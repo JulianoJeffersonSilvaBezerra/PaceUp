@@ -1,0 +1,13 @@
+body {
+  background: #000;
+  color: #fff;
+  font-family: Arial;
+}
+
+.debug-screen {
+  padding: 20px;
+}
+
+.block {
+  margin-bottom: 20px;
+}
