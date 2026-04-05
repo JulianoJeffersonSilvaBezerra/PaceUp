@@ -1,0 +1,121 @@
+# PaceUp — Guia de instalação dos novos arquivos
+# Siga os passos EM ORDEM. Não pule nenhum.
+
+═══════════════════════════════════════════════════════
+PASSO 1 — Copiar os arquivos Java para o Android
+═══════════════════════════════════════════════════════
+
+Destino: C:\runcadence\android\app\src\main\java\com\runcadence\app\
+
+Copie os 2 arquivos:
+  ✅ RunningPlugin.java  → pasta acima
+  ✅ RunningService.java → pasta acima
+
+═══════════════════════════════════════════════════════
+PASSO 2 — Atualizar o AndroidManifest.xml
+═══════════════════════════════════════════════════════
+
+Arquivo: C:\runcadence\android\app\src\main\AndroidManifest.xml
+
+Adicione estas permissões ANTES da tag <application>:
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+Adicione o serviço DENTRO da tag <application>:
+
+    <service
+        android:name=".RunningService"
+        android:foregroundServiceType="location"
+        android:exported="false" />
+
+═══════════════════════════════════════════════════════
+PASSO 3 — Registrar o plugin no MainActivity
+═══════════════════════════════════════════════════════
+
+Arquivo: android/app/src/main/java/com/runcadence/app/MainActivity.java
+(ou MainActivity.kt)
+
+Se for JAVA, substitua o conteúdo por:
+
+    package com.runcadence.app;
+    import android.os.Bundle;
+    import com.getcapacitor.BridgeActivity;
+
+    public class MainActivity extends BridgeActivity {
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            registerPlugin(RunningPlugin.class);
+            super.onCreate(savedInstanceState);
+        }
+    }
+
+Se for KOTLIN, adicione dentro do onCreate, ANTES do super.onCreate:
+
+    registerPlugin(RunningPlugin::class.java)
+
+═══════════════════════════════════════════════════════
+PASSO 4 — Copiar os arquivos TypeScript/React
+═══════════════════════════════════════════════════════
+
+  ✅ useGPS.ts    → substitui C:\runcadence\src\hooks\useGPS.ts
+  ✅ useCadence.ts → cria em C:\runcadence\src\hooks\useCadence.ts
+  ✅ RouteMap.tsx  → cria em C:\runcadence\src\components\RouteMap.tsx
+                    (crie a pasta "components" se não existir)
+
+═══════════════════════════════════════════════════════
+PASSO 5 — Instalar o Leaflet (mapa)
+═══════════════════════════════════════════════════════
+
+No terminal, dentro de C:\runcadence:
+
+    npm install leaflet @types/leaflet
+
+═══════════════════════════════════════════════════════
+PASSO 6 — Adicionar o mapa no App.tsx
+═══════════════════════════════════════════════════════
+
+No topo do App.tsx, adicione o import:
+
+    import { RouteMap } from './components/RouteMap';
+
+Adicione esta seção no JSX, ANTES da seção "player-card":
+
+    <section className="player-card" style={{ padding: 0, overflow: 'hidden' }}>
+      <div style={{ padding: '18px 16px 12px' }}>
+        <div className="section-head">
+          <h2>Mapa do trajeto</h2>
+          <span className="mini-badge">
+            {gps.data.routePoints.length} pontos
+          </span>
+        </div>
+      </div>
+      <RouteMap
+        routePoints={gps.data.routePoints}
+        currentLat={gps.data.lat}
+        currentLng={gps.data.lng}
+        isActive={gpsActive}
+      />
+    </section>
+
+═══════════════════════════════════════════════════════
+PASSO 7 — Build e instalar no celular
+═══════════════════════════════════════════════════════
+
+    npm run build
+    npx cap sync android
+    npx cap open android
+
+No Android Studio: Run ▶ (com o celular conectado via USB)
+
+═══════════════════════════════════════════════════════
+VERIFICAÇÃO — O que deve funcionar após isso:
+═══════════════════════════════════════════════════════
+
+  ✅ GPS continua rodando quando você minimiza o app
+  ✅ Notificação aparece na barra: "PaceUp — corrida ativa"
+  ✅ Mapa mostra o trajeto em tempo real (linha verde)
+  ✅ Ponto pulsante mostra sua posição atual
+  ✅ Distância, pace e velocidade continuam funcionando
