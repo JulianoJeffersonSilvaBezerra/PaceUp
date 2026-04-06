@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaceMusic</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <span class="logo">PACEMUSIC</span>
+    <button class="btn-perfil-header" id="btn-open-perfil">⚙ perfil</button>
+  </div>
+
+  <!-- MODAL: Perfil do corredor -->
+  <div class="modal-overlay" id="modal-perfil" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">perfil do corredor</span>
+        <button class="modal-close" id="btn-close-perfil">✕</button>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">tamanho da passada (metros)</label>
+        <div class="field-hint">ex: 1.25 — distância de um pé ao outro a cada passada</div>
+        <input type="number" id="input-passada" min="0.5" max="2.5" step="0.01" placeholder="1.02" value="1.02">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">cadência base (passos/min)</label>
+        <div class="field-hint">ex: 170 — sua cadência média correndo em ritmo normal</div>
+        <input type="number" id="input-cadencia" min="100" max="240" step="1" placeholder="170" value="170">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">variação da passada (metros)</label>
+        <div class="field-hint">ex: 0.05 — margem natural de variação da sua passada</div>
+        <input type="number" id="input-variacao" min="0.01" max="0.30" step="0.01" placeholder="0.05" value="0.05">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">modo de sincronização</label>
+        <div class="field-hint">defina como seus passos vão acompanhar a música</div>
+        <select id="input-modo">
+          <option value="1:1" selected>1 passo por batida</option>
+          <option value="2:1">2 passos por batida</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">pace leve (min:seg por km)</label>
+        <div class="field-hint">ritmo fácil, consegue conversar enquanto corre</div>
+        <input type="text" id="input-pace-leve" placeholder="6:30">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">pace forte (min:seg por km)</label>
+        <div class="field-hint">ritmo de esforço alto, sustentável por poucos minutos</div>
+        <input type="text" id="input-pace-forte" placeholder="4:30">
+      </div>
+
+      <button class="btn-salvar" id="btn-salvar-perfil">salvar perfil</button>
+
+      <div class="modal-tip">
+        <strong>Como medir sua passada:</strong> marque 20 metros no chão,
+        corra em ritmo normal e conte quantos passos deu.
+        Divida 20 pelo número de passos. Ex: 20 ÷ 16 = 1,25 m.
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="0">player</button>
+    <button class="tab" data-tab="1">análise</button>
+    <button class="tab" data-tab="2">playlists</button>
+  </div>
+
+  <!-- ── PLAYER ── -->
+  <div class="card" id="panel-0">
+
+    <div class="upload-area" id="upload-area">
+      <input type="file" id="file-input" accept="audio/*" style="display:none">
+      <div class="upload-inner" id="upload-trigger">
+        <div class="upload-icon">♫</div>
+        <div class="upload-text">carregar música</div>
+        <div class="upload-sub">MP3, WAV, OGG · clique ou arraste aqui</div>
+      </div>
+    </div>
+
+    <div class="song-row" id="song-row" style="display:none;">
+      <div class="song-art">🎵</div>
+      <div style="flex:1; min-width:0;">
+        <div class="song-title" id="song-title">—</div>
+        <div class="song-artist">arquivo local</div>
+      </div>
+      <span class="badge badge-moderado" id="badge-tipo">—</span>
+    </div>
+
+    <div id="player-body" style="display:none;">
+
+      <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-fill" id="prog"></div>
+      </div>
+      <div class="time-row">
+        <span id="time-cur">0:00</span>
+        <span id="time-dur">0:00</span>
+      </div>
+
+      <div class="controls">
+        <button class="btn-ctrl" id="btn-back" title="voltar 10s">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-3.13"/>
+          </svg>
+        </button>
+        <button class="btn-play" id="btn-play">
+          <svg id="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        </button>
+        <button class="btn-ctrl" id="btn-fwd" title="avançar 10s">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-.49-3.13"/>
+          </svg>
+        </button>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Velocidade manual -->
+      <div class="sec-label">velocidade da música</div>
+      <div class="speed-row">
+        <span class="mini-label">75%</span>
+        <input type="range" id="speed" min="75" max="130" value="100" step="1">
+        <span class="mini-label">130%</span>
+        <span class="speed-val" id="speed-out">100%</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-val" id="stat-pace-min">—</div>
+          <div class="stat-lbl">pace mínimo</div>
+        </div>
+        <div class="stat stat--center">
+          <div class="stat-val stat-val--accent" id="stat-pace">—</div>
+          <div class="stat-lbl">pace estimado</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" id="stat-pace-max">—</div>
+          <div class="stat-lbl">pace máximo</div>
+        </div>
+      </div>
+
+      <div class="stat-sub" id="stat-sub">sincronize sua música com sua passada</div>
+      <div class="stat-passada-box" id="stat-passada-box" style="display:none;">
+        <span id="stat-passada-txt">tamanho da passada: — m</span>
+      </div>
+
+      <div class="warning" id="warn">⚠ acima de 120%: pode haver distorção no áudio</div>
+
+      <hr class="divider">
+
+      <!-- Ajuste automático por pace alvo -->
+      <div class="sec-label">qual pace você quer correr?</div>
+      <div class="auto-desc">
+        Digite o pace desejado e o app ajusta a música automaticamente
+        para que a batida coincida com a sua passada nesse ritmo.
+      </div>
+      <div class="auto-row">
+        <input type="text" id="pace-target" placeholder="5:45">
+        <span class="unit">min/km</span>
+        <button class="btn-auto" id="btn-auto">ajustar música →</button>
+      </div>
+
+      <div class="save-row">
+        <button class="btn-save-playlist" id="btn-save-playlist">+ salvar na playlist</button>
+        <button class="btn-trocar" id="btn-trocar">trocar música</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ANÁLISE ── -->
+  <div class="card" id="panel-1" style="display:none;">
+    <div id="analise-empty" style="text-align:center; padding: 2rem 0;">
+      <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted);">carregue uma música para ver a análise</div>
+    </div>
+    <div id="analise-content" style="display:none;">
+
+      <div class="analise-hero">
+        <div>
+          <div class="sec-label" style="margin-bottom:4px;">bpm detectado</div>
+          <div><span class="bpm-big" id="analise-bpm">—</span><span class="bpm-unit">bpm</span></div>
+        </div>
+        <div style="text-align:right;">
+          <div class="sec-label" style="margin-bottom:4px;">passada configurada</div>
+          <div class="bpm-big" style="font-size:24px;" id="analise-passada">—</div>
+          <div class="bpm-unit">metros</div>
+        </div>
+      </div>
+
+      <div class="analise-explainer">
+        <strong>Como ler esta tabela:</strong> cada linha mostra o que acontece
+        se você ajustar a música naquela velocidade. Por exemplo, em 90% a música
+        toca mais lento, a batida cai para menos BPM. O cálculo do pace considera
+        sua passada, sua cadência e o modo de sincronização configurado no perfil.
+      </div>
+
+      <table class="pace-table" id="pace-table">
+        <thead>
+          <tr>
+            <th>velocidade</th>
+            <th>bpm / passos·min</th>
+            <th>pace estimado</th>
+          </tr>
+        </thead>
+        <tbody id="pace-tbody"></tbody>
+      </table>
+
+      <hr class="divider">
+      <div class="meta-row">
+        <span class="key">uso sugerido no pace atual</span>
+        <span class="badge badge-moderado" id="analise-badge">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PLAYLISTS ── -->
+  <div class="card" id="panel-2" style="display:none;">
+
+    <div class="sec-label" style="margin-bottom:12px;">zonas de treino</div>
+
+    <div id="zonas-lista"></div>
+
+    <button class="btn-add-zona" id="btn-add-zona">+ adicionar zona</button>
+
+    <!-- Modal adicionar música à playlist -->
+    <div class="save-modal" id="save-modal" style="display:none;">
+      <div class="sec-label" style="margin-bottom:8px;">salvar "<span id="save-music-name">—</span>" em:</div>
+      <div id="save-zona-opts"></div>
+      <button class="btn-cancel-save" id="btn-cancel-save">cancelar</button>
+    </div>
+
+  </div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>

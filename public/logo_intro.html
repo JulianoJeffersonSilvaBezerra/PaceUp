@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PaceUp — Intro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      font-family: 'Share Tech Mono', monospace;
+      cursor: pointer;
+    }
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #000;
+      overflow: hidden;
+    }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(149,229,56,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(149,229,56,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0;
+      animation: gridFadeIn 0.6s ease 0.3s forwards;
+    }
+    .vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 30%, #000 100%);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .rings { position: absolute; width: 300px; height: 300px; border-radius: 50%; pointer-events: none; }
+    .ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(149,229,56,0.0); transform: scale(0); }
+    .center { position: relative; z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    .logo-box {
+      position: relative;
+      width: clamp(120px, 22vw, 200px);
+      aspect-ratio: 118/119;
+      opacity: 0;
+      transform: scale(0.6);
+      filter: brightness(0);
+    }
+    .logo-box svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .logo-main path { fill: rgb(149,229,56); }
+    .logo-glitch1 path { fill: rgb(149,229,56); }
+    .logo-glitch2 path { fill: rgb(56,229,149); }
+    .logo-glitch1, .logo-glitch2 { opacity: 0; mix-blend-mode: screen; }
+    .aura {
+      position: absolute;
+      inset: -30%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(149,229,56,0.25) 0%, transparent 70%);
+      filter: blur(20px);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .scan-line {
+      position: absolute;
+      left: -10%; right: -10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(149,229,56,0.8), transparent);
+      top: 0%;
+      opacity: 0;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 8vw, 72px);
+      letter-spacing: 0.18em;
+      color: #fff;
+      opacity: 0;
+      transform: scaleX(0.3);
+      transform-origin: center;
+      text-shadow: 0 0 30px rgba(149,229,56,0.4);
+      position: relative;
+    }
+    .logo-text span { color: rgb(149,229,56); }
+    .logo-tagline {
+      font-size: clamp(9px, 1.5vw, 12px);
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: rgba(149,229,56,0.6);
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .beat-bars { display: flex; align-items: flex-end; gap: 4px; height: 32px; opacity: 0; }
+    .bar { width: 3px; background: rgb(149,229,56); border-radius: 2px; transform-origin: bottom; height: 4px; }
+    .bpm-counter { font-size: clamp(10px, 1.8vw, 13px); color: rgba(149,229,56,0.5); letter-spacing: 0.3em; opacity: 0; }
+    .replay-hint {
+      position: absolute;
+      bottom: 32px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: hintFade 1s ease 5.5s forwards;
+    }
+    .flash { position: fixed; inset: 0; background: rgba(149,229,56,0.15); opacity: 0; pointer-events: none; z-index: 100; }
+    @keyframes gridFadeIn { to { opacity: 1; } }
+    @keyframes hintFade { to { opacity: 1; } }
+    @keyframes ringPulse { 0% { transform: scale(0.2); opacity: 0.7; border-color: rgba(149,229,56,0.7); } 100% { transform: scale(3.5); opacity: 0; border-color: rgba(149,229,56,0.0); } }
+    @keyframes scanMove { 0% { top: -2%; opacity: 0.8; } 100% { top: 102%; opacity: 0; } }
+    @keyframes glitch1kf { 0%,100% { opacity:0; transform:translate(0,0); } 10% { opacity:0.6; transform:translate(-4px,-1px) scaleX(1.02); } 20% { opacity:0; transform:translate(0,0); } 50% { opacity:0.3; transform:translate(3px,1px); } 60% { opacity:0; } }
+    @keyframes glitch2kf { 0%,100% { opacity:0; transform:translate(0,0); } 15% { opacity:0.4; transform:translate(4px,0) scaleX(0.98); } 25% { opacity:0; transform:translate(0,0); } 55% { opacity:0.25; transform:translate(-3px,2px); } 65% { opacity:0; } }
+    @keyframes barBeat { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(4); } }
+    @keyframes flash { 0% { opacity: 0.4; } 100% { opacity: 0; } }
+  </style>
+</head>
+<body>
+<div class="scene" id="scene">
+  <div class="grid-bg"></div>
+  <div class="vignette"></div>
+  <div class="flash" id="flash"></div>
+  <div class="rings" id="rings">
+    <div class="ring" id="r1"></div>
+    <div class="ring" id="r2"></div>
+    <div class="ring" id="r3"></div>
+  </div>
+  <div class="center">
+    <div class="logo-box" id="logoBox">
+      <div class="aura" id="aura"></div>
+      <div class="scan-line" id="scanLine"></div>
+      <svg class="logo-glitch1" viewBox="0 0 118 119" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M 111 34 L 91 12 L 65 34 L 65 35 L 75 35 L 76 36 L 76 41 L 75 42 L 75 45 L 72 51 L 64 59 L 59 61 L 57 63 L 51 64 L 47 66 L 41 66 L 40 67 L 32 67 L 31 66 L 31 63 L 32 62 L 32 59 L 34 55 L 35 47 L 37 43 L 38 36 L 39 35 L 54 35 L 57 32 L 58 32 L 61 29 L 62 29 L 66 25 L 67 25 L 71 21 L 71 20 L 70 19 L 25 19 L 24 25 L 23 26 L 23 29 L 22 30 L 22 33 L 21 34 L 21 37 L 20 38 L 20 41 L 19 42 L 19 45 L 18 46 L 18 49 L 17 50 L 17 53 L 16 54 L 15 60 L 14 61 L 14 64 L 13 65 L 13 69 L 11 73 L 11 77 L 10 78 L 10 80 L 8 84 L 7 92 L 5 96 L 5 100 L 21 100 L 23 97 L 23 95 L 24 94 L 24 90 L 25 89 L 25 87 L 27 83 L 41 83 L 42 82 L 47 82 L 48 81 L 51 81 L 52 80 L 58 79 L 61 77 L 63 77 L 71 73 L 74 70 L 78 68 L 83 63 L 83 62 L 88 56 L 89 52 L 91 49 L 92 43 L 93 42 L 93 39 L 95 35 L 111 35 Z"/></svg>
+      <svg class="logo-glitch2" viewBox="0 0 118 119" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M 111 34 L 91 12 L 65 34 L 65 35 L 75 35 L 76 36 L 76 41 L 75 42 L 75 45 L 72 51 L 64 59 L 59 61 L 57 63 L 51 64 L 47 66 L 41 66 L 40 67 L 32 67 L 31 66 L 31 63 L 32 62 L 32 59 L 34 55 L 35 47 L 37 43 L 38 36 L 39 35 L 54 35 L 57 32 L 58 32 L 61 29 L 62 29 L 66 25 L 67 25 L 71 21 L 71 20 L 70 19 L 25 19 L 24 25 L 23 26 L 23 29 L 22 30 L 22 33 L 21 34 L 21 37 L 20 38 L 20 41 L 19 42 L 19 45 L 18 46 L 18 49 L 17 50 L 17 53 L 16 54 L 15 60 L 14 61 L 14 64 L 13 65 L 13 69 L 11 73 L 11 77 L 10 78 L 10 80 L 8 84 L 7 92 L 5 96 L 5 100 L 21 100 L 23 97 L 23 95 L 24 94 L 24 90 L 25 89 L 25 87 L 27 83 L 41 83 L 42 82 L 47 82 L 48 81 L 51 81 L 52 80 L 58 79 L 61 77 L 63 77 L 71 73 L 74 70 L 78 68 L 83 63 L 83 62 L 88 56 L 89 52 L 91 49 L 92 43 L 93 42 L 93 39 L 95 35 L 111 35 Z"/></svg>
+      <svg class="logo-main" viewBox="0 0 118 119" xmlns="http://www.w3.org/2000/svg"><path d="M 111 34 L 91 12 L 65 34 L 65 35 L 75 35 L 76 36 L 76 41 L 75 42 L 75 45 L 72 51 L 64 59 L 59 61 L 57 63 L 51 64 L 47 66 L 41 66 L 40 67 L 32 67 L 31 66 L 31 63 L 32 62 L 32 59 L 34 55 L 35 47 L 37 43 L 38 36 L 39 35 L 54 35 L 57 32 L 58 32 L 61 29 L 62 29 L 66 25 L 67 25 L 71 21 L 71 20 L 70 19 L 25 19 L 24 25 L 23 26 L 23 29 L 22 30 L 22 33 L 21 34 L 21 37 L 20 38 L 20 41 L 19 42 L 19 45 L 18 46 L 18 49 L 17 50 L 17 53 L 16 54 L 15 60 L 14 61 L 14 64 L 13 65 L 13 69 L 11 73 L 11 77 L 10 78 L 10 80 L 8 84 L 7 92 L 5 96 L 5 100 L 21 100 L 23 97 L 23 95 L 24 94 L 24 90 L 25 89 L 25 87 L 27 83 L 41 83 L 42 82 L 47 82 L 48 81 L 51 81 L 52 80 L 58 79 L 61 77 L 63 77 L 71 73 L 74 70 L 78 68 L 83 63 L 83 62 L 88 56 L 89 52 L 91 49 L 92 43 L 93 42 L 93 39 L 95 35 L 111 35 Z"/></svg>
+    </div>
+    <div class="beat-bars" id="beatBars">
+      <div class="bar" id="b1"></div><div class="bar" id="b2"></div><div class="bar" id="b3"></div><div class="bar" id="b4"></div><div class="bar" id="b5"></div><div class="bar" id="b6"></div><div class="bar" id="b7"></div>
+    </div>
+    <div class="logo-text" id="logoText">PACE<span>UP</span></div>
+    <div class="logo-tagline" id="tagline">LET'S PACEUP TODAY</div>
+    <div class="bpm-counter" id="bpmCounter">BPM — —</div>
+  </div>
+  <div class="replay-hint" id="replayHint">CLIQUE PARA REPETIR</div>
+</div>
+<script>
+(function() {
+  let ctx = null;
+  function getCtx() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    return ctx;
+  }
+  function playAlienBeat({ time = 0, freq = 48, volume = 0.9, duration = 1.4 } = {}) {
+    const ac = getCtx();
+    const t = ac.currentTime + time;
+    const sub = ac.createOscillator(); const subGain = ac.createGain();
+    sub.type = 'sine'; sub.frequency.setValueAtTime(freq, t); sub.frequency.exponentialRampToValueAtTime(freq * 0.4, t + duration * 0.8); subGain.gain.setValueAtTime(volume, t); subGain.gain.exponentialRampToValueAtTime(0.001, t + duration); sub.connect(subGain);
+    const harm = ac.createOscillator(); const harmGain = ac.createGain();
+    harm.type = 'triangle'; harm.frequency.setValueAtTime(freq * 1.5, t); harm.frequency.exponentialRampToValueAtTime(freq * 0.6, t + duration * 0.5); harmGain.gain.setValueAtTime(volume * 0.3, t); harmGain.gain.exponentialRampToValueAtTime(0.001, t + duration * 0.6); harm.connect(harmGain);
+    const click = ac.createOscillator(); const clickGain = ac.createGain();
+    click.type = 'square'; click.frequency.setValueAtTime(freq * 8, t); click.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.06); clickGain.gain.setValueAtTime(volume * 0.5, t); clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.08); click.connect(clickGain);
+    const waveshaper = ac.createWaveShaper(); const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) { const x = (i * 2) / 256 - 1; curve[i] = (Math.PI + 180) * x / (Math.PI + 180 * Math.abs(x)); }
+    waveshaper.curve = curve;
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -24; comp.knee.value = 6; comp.ratio.value = 12; comp.attack.value = 0.001; comp.release.value = 0.3;
+    const delay = ac.createDelay(0.5); delay.delayTime.value = 0.07; const delayGain = ac.createGain(); delayGain.gain.value = 0.18; delay.connect(delayGain); delayGain.connect(delay);
+    [subGain, harmGain, clickGain].forEach(g => { g.connect(waveshaper); g.connect(delay); }); waveshaper.connect(comp); comp.connect(ac.destination); delayGain.connect(ac.destination);
+    [sub, harm, click].forEach(o => { o.start(t); o.stop(t + duration + 0.3); });
+  }
+  function playActivationSweep() {
+    const ac = getCtx(); const t = ac.currentTime;
+    const bufferSize = ac.sampleRate * 1.5; const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate); const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = ac.createBufferSource(); noise.buffer = buffer;
+    const filter = ac.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.setValueAtTime(80, t); filter.frequency.exponentialRampToValueAtTime(2400, t + 1.0); filter.Q.value = 8;
+    const noiseGain = ac.createGain(); noiseGain.gain.setValueAtTime(0.0, t); noiseGain.gain.linearRampToValueAtTime(0.15, t + 0.3); noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 1.4);
+    noise.connect(filter); filter.connect(noiseGain); noiseGain.connect(ac.destination); noise.start(t); noise.stop(t + 1.6);
+    const osc = ac.createOscillator(); const oscGain = ac.createGain(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(30, t + 0.6); osc.frequency.exponentialRampToValueAtTime(55, t + 1.1); oscGain.gain.setValueAtTime(0, t + 0.6); oscGain.gain.linearRampToValueAtTime(0.6, t + 0.8); oscGain.gain.exponentialRampToValueAtTime(0.001, t + 1.4); osc.connect(oscGain); oscGain.connect(ac.destination); osc.start(t + 0.6); osc.stop(t + 1.6);
+  }
+  const logoBox = document.getElementById('logoBox'); const aura = document.getElementById('aura'); const scanLine = document.getElementById('scanLine'); const logoText = document.getElementById('logoText'); const tagline = document.getElementById('tagline'); const bpmCounter = document.getElementById('bpmCounter'); const beatBars = document.getElementById('beatBars'); const bars = document.querySelectorAll('.bar'); const flash = document.getElementById('flash'); const r1 = document.getElementById('r1'); const r2 = document.getElementById('r2'); const r3 = document.getElementById('r3'); const glitch1 = document.querySelector('.logo-glitch1'); const glitch2 = document.querySelector('.logo-glitch2');
+  let beatCount = 0; const BPM = 72;
+  function pulseRing(el, delay = 0) { setTimeout(() => { el.style.animation = 'none'; el.getBoundingClientRect(); el.style.animation = 'ringPulse 1.2s cubic-bezier(0.2,0.6,0.4,1) forwards'; }, delay); }
+  function flashScreen() { flash.style.animation = 'none'; flash.getBoundingClientRect(); flash.style.animation = 'flash 0.4s ease forwards'; }
+  function animateBars(intensity = 1) { bars.forEach((bar, i) => { const heights = [6, 14, 24, 32, 24, 14, 6]; const randomFactor = 0.5 + Math.random() * 0.5; const h = heights[i] * intensity * randomFactor; bar.style.height = h + 'px'; bar.style.opacity = 0.7 + Math.random() * 0.3; setTimeout(() => { bar.style.height = (4 + Math.random() * 6) + 'px'; bar.style.opacity = 0.3; }, 120); }); }
+  function triggerGlitch() { glitch1.style.animation = 'glitch1kf 0.25s steps(1) forwards'; glitch2.style.animation = 'glitch2kf 0.25s steps(1) forwards'; setTimeout(() => { glitch1.style.animation = ''; glitch2.style.animation = ''; }, 260); }
+  function beat() { beatCount++; const intensity = beatCount <= 3 ? beatCount / 3 : 1; const freq = beatCount <= 3 ? 36 + beatCount * 4 : 48; playAlienBeat({ freq, volume: 0.75 + intensity * 0.2, duration: 1.3 }); flashScreen(); animateBars(intensity); pulseRing(r1); setTimeout(() => pulseRing(r2), 80); setTimeout(() => pulseRing(r3), 160); if (beatCount % 2 === 0) triggerGlitch(); logoBox.style.transform = 'scale(1.06)'; logoBox.style.filter = `drop-shadow(0 0 28px rgba(149,229,56,0.7)) drop-shadow(0 0 60px rgba(149,229,56,0.3))`; setTimeout(() => { logoBox.style.transform = 'scale(1)'; logoBox.style.filter = `drop-shadow(0 0 14px rgba(149,229,56,0.3)) drop-shadow(0 0 30px rgba(149,229,56,0.15))`; }, 120); aura.style.opacity = '1'; aura.style.transform = 'scale(1.15)'; setTimeout(() => { aura.style.opacity = '0.5'; aura.style.transform = 'scale(1)'; }, 200); bpmCounter.textContent = `BPM  ${BPM}  ·  BEAT ${beatCount}`; }
+  function runIntro() {
+    beatCount = 0;
+    logoBox.style.cssText = 'opacity:0; transform:scale(0.6); filter:brightness(0); transition:none;';
+    logoText.style.cssText = 'opacity:0; transform:scaleX(0.3); transition:none;';
+    tagline.style.cssText = 'opacity:0; transform:translateY(10px); transition:none;';
+    bpmCounter.style.cssText = 'opacity:0; transition:none;';
+    beatBars.style.cssText = 'opacity:0; transition:none;';
+    aura.style.cssText = 'opacity:0; transition:none;';
+    scanLine.style.cssText = 'opacity:0; transition:none;';
+    glitch1.style.animation = ''; glitch2.style.animation = ''; [r1, r2, r3].forEach(r => { r.style.animation = 'none'; r.style.opacity = '0'; });
+    getCtx();
+    setTimeout(() => { playActivationSweep(); }, 100);
+    setTimeout(() => { logoBox.style.transition = 'opacity 0.6s ease, transform 0.8s cubic-bezier(0.2,1.2,0.3,1), filter 0.8s ease'; logoBox.style.opacity = '1'; logoBox.style.transform = 'scale(1)'; logoBox.style.filter = 'brightness(1) drop-shadow(0 0 8px rgba(149,229,56,0.2))'; }, 500);
+    setTimeout(() => { scanLine.style.transition = 'none'; scanLine.style.opacity = '1'; scanLine.style.animation = 'scanMove 0.6s linear forwards'; setTimeout(() => { scanLine.style.opacity = '0'; scanLine.style.animation = ''; }, 700); }, 900);
+    setTimeout(() => { aura.style.transition = 'opacity 0.4s, transform 0.4s'; aura.style.opacity = '0.5'; }, 1200);
+    setTimeout(() => { beatBars.style.transition = 'opacity 0.3s'; beatBars.style.opacity = '1'; bpmCounter.style.transition = 'opacity 0.3s'; bpmCounter.style.opacity = '1'; playAlienBeat({ freq: 42, volume: 0.82, duration: 0.9 }); flashScreen(); animateBars(0.9); pulseRing(r1); setTimeout(() => pulseRing(r2), 70); setTimeout(() => pulseRing(r3), 140); logoBox.style.transform = 'scale(1.05)'; logoBox.style.filter = 'drop-shadow(0 0 24px rgba(149,229,56,0.65)) drop-shadow(0 0 50px rgba(149,229,56,0.25))'; setTimeout(() => { logoBox.style.transform = 'scale(1)'; logoBox.style.filter = 'drop-shadow(0 0 14px rgba(149,229,56,0.3)) drop-shadow(0 0 30px rgba(149,229,56,0.15))'; }, 140); bpmCounter.textContent = 'SYSTEM ONLINE'; }, 1450);
+    setTimeout(() => { logoText.style.transition = 'opacity 0.5s ease, transform 0.6s cubic-bezier(0.2,1.1,0.3,1)'; logoText.style.opacity = '1'; logoText.style.transform = 'scaleX(1)'; }, 2100);
+    setTimeout(() => { tagline.style.transition = 'opacity 0.5s ease, transform 0.5s ease'; tagline.style.opacity = '1'; tagline.style.transform = 'translateY(0)'; }, 2500);
+    setTimeout(() => { if (typeof playOscilloscopeRise === 'function') { playOscilloscopeRise(); } }, 2600);
+    setTimeout(() => { bars.forEach(b => { b.style.height = '4px'; b.style.opacity = '0.2'; }); }, 4300);
+  }
+  let started = false;
+  document.getElementById('scene').addEventListener('click', () => { if (!started) { runIntro(); started = true; } });
+  setTimeout(() => { if (!started) runIntro(); }, 200);
+})();
+</script>
+</body>
+</html>

@@ -13,6 +13,11 @@ export interface WorkoutSession {
   routePoints: RoutePoint[];
   musicFileName: string;
   musicMode: 'follow_music' | 'target_pace';
+  workoutType?: 'run' | 'tiro';
+  tiroBlocksCompleted?: number;
+  tiroRepeatBlocksCompleted?: number;
+  tiroAveragePace?: number;
+  tiroTemplateName?: string;
 }
 
 function loadHistory(): WorkoutSession[] {
@@ -54,6 +59,11 @@ function normalizeSessions(input: WorkoutSession[]): WorkoutSession[] {
       routePoints: item.routePoints,
       musicFileName: item.musicFileName || '',
       musicMode: item.musicMode === 'target_pace' ? 'target_pace' : 'follow_music',
+      workoutType: item.workoutType === 'tiro' ? 'tiro' : 'run',
+      tiroBlocksCompleted: Number.isFinite(item.tiroBlocksCompleted) ? item.tiroBlocksCompleted : undefined,
+      tiroRepeatBlocksCompleted: Number.isFinite(item.tiroRepeatBlocksCompleted) ? item.tiroRepeatBlocksCompleted : undefined,
+      tiroAveragePace: Number.isFinite(item.tiroAveragePace) ? item.tiroAveragePace : undefined,
+      tiroTemplateName: item.tiroTemplateName || undefined,
     }));
 }
 

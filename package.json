@@ -10,12 +10,17 @@
     "android:sync": "npx cap sync android",
     "android:open": "npx cap open android",
     "android:build": "npm run build && npm run android:sync",
-    "android:apk": "cd android && gradlew.bat assembleDebug --console=plain --no-daemon"
+    "android:apk": "cd android && gradlew.bat assembleDebug --console=plain --no-daemon",
+    "android:install": "npm run android:build && cd android && gradlew.bat installDebug --console=plain --no-daemon",
+    "android:update": "npm run android:install",
+    "android:update:open": "npm run android:update && npm run android:open"
   },
   "dependencies": {
+    "@capgo/capacitor-pedometer": "^8.0.23",
     "@capacitor/android": "^8.3.0",
     "@capacitor/core": "^8.3.0",
     "@capacitor/geolocation": "^8.2.0",
+    "@supabase/supabase-js": "^2.49.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

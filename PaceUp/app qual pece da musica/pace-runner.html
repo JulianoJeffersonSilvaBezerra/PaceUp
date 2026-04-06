@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaceRunner — Descubra seu pace pela música</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a26;
+    --border: #2a2a3e;
+    --accent: #e8ff47;
+    --accent2: #47ffe8;
+    --text: #f0f0f0;
+    --muted: #6b6b8a;
+    --danger: #ff4747;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    margin-bottom: 52px;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    line-height: 1;
+    position: relative;
+    display: inline-block;
+  }
+
+  .logo::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .tagline {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover {
+    border-color: rgba(232,255,71,0.2);
+  }
+
+  .card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-label::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover,
+  .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(232,255,71,0.04);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .upload-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .upload-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .file-loaded {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(232,255,71,0.07);
+    border: 1px solid rgba(232,255,71,0.2);
+    border-radius: 10px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .file-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .file-info { flex: 1; overflow: hidden; }
+
+  .file-name {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--accent);
+  }
+
+  .file-status {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .btn-remove {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .btn-remove:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 16px;
+  }
+
+  .control-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .control-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .input-group {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .passada-input,
+  .select-control,
+  .speed-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .passada-input {
+    flex: 1;
+    font-size: 28px;
+    padding: 16px 20px;
+    min-width: 0;
+  }
+
+  .passada-input:focus,
+  .select-control:focus,
+  .speed-input:focus {
+    border-color: var(--accent);
+  }
+
+  .passada-input::placeholder,
+  .speed-input::placeholder {
+    color: var(--muted);
+  }
+
+  .select-control,
+  .speed-input {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+
+  .unit-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .unit-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    padding: 10px 16px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .unit-btn.active {
+    background: rgba(232,255,71,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .hint {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  .btn-analyze {
+    width: 100%;
+    background: var(--accent);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-analyze:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(232,255,71,0.3);
+  }
+
+  .btn-analyze:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .btn-analyze:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .progress-wrap {
+    margin-top: 16px;
+    display: none;
+  }
+
+  .progress-wrap.show { display: block; }
+
+  .progress-bar-bg {
+    background: var(--border);
+    border-radius: 4px;
+    height: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.2s;
+    animation: progressPulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes progressPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 28px;
+    margin-top: 16px;
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .result-card.show { display: block; }
+
+  .result-card.highlight {
+    border-color: rgba(232,255,71,0.35);
+    background: linear-gradient(135deg, rgba(232,255,71,0.06), rgba(71,255,232,0.03));
+  }
+
+  .pace-display {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .pace-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .pace-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 96px;
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-shadow: 0 0 60px rgba(232,255,71,0.3);
+    transition: all 0.3s ease;
+  }
+
+  .pace-unit {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  .result-explainer {
+    margin-top: 14px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  .bpm-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bpm-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent2);
+    animation: none;
+  }
+
+  .bpm-dot.beating {
+    animation: beat var(--bpm-interval, 0.4s) ease-in-out infinite;
+  }
+
+  @keyframes beat {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    10% { transform: scale(1.8); opacity: 1; }
+    30% { transform: scale(1); opacity: 0.4; }
+  }
+
+  .kmh-strip {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: center;
+    margin-top: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .kmh-strip span {
+    color: var(--accent2);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .alert.show { display: block; }
+  .alert.error { background: rgba(255,71,71,0.1); border: 1px solid rgba(255,71,71,0.3); color: #ff8080; }
+  .alert.warn { background: rgba(255,200,71,0.1); border: 1px solid rgba(255,200,71,0.3); color: #ffc847; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 52px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--border);
+    letter-spacing: 1px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 640px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .pace-value {
+      font-size: 72px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">PaceRunner</div>
+    <div class="tagline">Descubra seu pace pela música</div>
+  </header>
+
+  <div class="card">
+    <div class="card-label">01 — Carregar música</div>
+
+    <div id="uploadZone" class="upload-zone">
+      <input type="file" id="fileInput" accept="audio/*">
+      <div class="upload-icon">🎵</div>
+      <div class="upload-title">Arraste ou clique para carregar</div>
+      <div class="upload-sub">MP3 · WAV · OGG · M4A · FLAC</div>
+    </div>
+
+    <div id="fileLoaded" class="file-loaded" style="display:none">
+      <div class="file-icon">🎶</div>
+      <div class="file-info">
+        <div class="file-name" id="fileName">—</div>
+        <div class="file-status" id="fileStatus">aguardando análise</div>
+      </div>
+      <button class="btn-remove" onclick="removeFile()">✕ remover</button>
+    </div>
+
+    <div id="alertFile" class="alert error"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">02 — Configuração da corrida</div>
+
+    <div class="form-grid">
+      <div class="control-block">
+        <div class="control-label">Tamanho da passada</div>
+        <div class="input-group">
+          <input
+            class="passada-input"
+            id="passadaInput"
+            type="number"
+            step="1"
+            min="30"
+            max="250"
+            placeholder="100"
+          >
+          <div class="unit-toggle">
+            <button class="unit-btn active" id="btnCm" onclick="setUnit('cm')">cm</button>
+            <button class="unit-btn" id="btnM" onclick="setUnit('m')">m</button>
+          </div>
+        </div>
+        <div class="hint" id="passadaHint">Informe sua passada habitual em corrida</div>
+        <div id="alertPassada" class="alert warn"></div>
+      </div>
+
+      <div class="control-block">
+        <div class="control-label">Interpretação do ritmo</div>
+        <select id="stepsPerBeat" class="select-control">
+          <option value="1">1 passo por batida</option>
+          <option value="2" selected>2 passos por batida</option>
+          <option value="3">3 passos por batida</option>
+          <option value="4">4 passos por batida</option>
+        </select>
+        <div class="hint">Para corrida, 2 passos por batida costuma fazer mais sentido do que 1.</div>
+
+        <input
+          id="playbackRate"
+          class="speed-input"
+          type="number"
+          step="0.01"
+          min="0.5"
+          max="2"
+          value="1.00"
+          placeholder="1.00"
+        >
+        <div class="hint" id="speedHint">Velocidade da música: 1.00x = original. 0.85x = mais lenta.</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-analyze" id="btnAnalyze" onclick="analyzeAudio()" disabled>
+    ANALISAR MÚSICA
+  </button>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">Iniciando análise…</div>
+  </div>
+
+  <div class="result-card highlight" id="resultCard">
+    <div class="pace-display">
+      <div class="pace-label">Pace estimado</div>
+      <div class="pace-value" id="paceValue">0:00</div>
+      <div class="pace-unit">min / km</div>
+      <div class="result-explainer" id="explanationText">—</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-val bpm-pulse">
+          <div class="bpm-dot" id="bpmDot"></div>
+          <span id="bpmValue">—</span>
+        </div>
+        <div class="stat-label">BPM detectado</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="passadaValue">—</div>
+        <div class="stat-label">Passada (m)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="stepsPerBeatValue">—</div>
+        <div class="stat-label">Passos por batida</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="cadenciaValue">—</div>
+        <div class="stat-label">Cadência real/min</div>
+      </div>
+    </div>
+
+    <div class="kmh-strip">
+      Velocidade equivalente: <span id="kmhValue">—</span> km/h
+    </div>
+  </div>
+
+  <div id="alertResult" class="alert error"></div>
+
+  <footer>
+    BPM calculado via Web Audio API · Pace calculado por cadência real = BPM × passos por batida × velocidade da música
+  </footer>
+</div>
+
+<script>
+let audioFile = null;
+let detectedBPM = null;
+let currentUnit = 'cm';
+
+const fileInput = document.getElementById('fileInput');
+const uploadZone = document.getElementById('uploadZone');
+const passadaInput = document.getElementById('passadaInput');
+const stepsPerBeatSelect = document.getElementById('stepsPerBeat');
+const playbackRateInput = document.getElementById('playbackRate');
+
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.classList.add('drag-over');
+});
+
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('audio/')) {
+    loadFile(file);
+  } else {
+    showAlert('alertFile', 'Formato não suportado. Use MP3, WAV, OGG, M4A ou FLAC.');
+  }
+});
+
+passadaInput.addEventListener('input', () => {
+  updateHint();
+  if (detectedBPM) recalcPace();
+});
+
+stepsPerBeatSelect.addEventListener('change', () => {
+  if (detectedBPM) recalcPace();
+});
+
+playbackRateInput.addEventListener('input', () => {
+  updateSpeedHint();
+  if (detectedBPM) recalcPace();
+});
+
+function loadFile(file) {
+  audioFile = file;
+  detectedBPM = null;
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('fileLoaded').style.display = 'flex';
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileStatus').textContent = 'pronto para analisar';
+  hideAlert('alertFile');
+  hideAlert('alertResult');
+  hideResult();
+  updateAnalyzeBtn();
+}
+
+function removeFile() {
+  audioFile = null;
+  detectedBPM = null;
+  fileInput.value = '';
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('fileLoaded').style.display = 'none';
+  hideResult();
+  updateAnalyzeBtn();
+}
+
+function setUnit(unit) {
+  const value = parseFloat(passadaInput.value);
+
+  if (unit === 'm' && currentUnit === 'cm' && !Number.isNaN(value)) {
+    passadaInput.value = (value / 100).toFixed(2);
+    passadaInput.step = '0.01';
+    passadaInput.min = '0.30';
+    passadaInput.max = '2.50';
+    passadaInput.placeholder = '1.00';
+  } else if (unit === 'cm' && currentUnit === 'm' && !Number.isNaN(value)) {
+    passadaInput.value = Math.round(value * 100);
+    passadaInput.step = '1';
+    passadaInput.min = '30';
+    passadaInput.max = '250';
+    passadaInput.placeholder = '100';
+  }
+
+  currentUnit = unit;
+  document.getElementById('btnCm').classList.toggle('active', unit === 'cm');
+  document.getElementById('btnM').classList.toggle('active', unit === 'm');
+  updateHint();
+
+  if (detectedBPM) recalcPace();
+}
+
+function getPassadaMetros() {
+  const raw = parseFloat(passadaInput.value.toString().replace(',', '.'));
+  if (Number.isNaN(raw) || raw <= 0) return null;
+  return currentUnit === 'cm' ? raw / 100 : raw;
+}
+
+function getStepsPerBeat() {
+  const value = parseFloat(stepsPerBeatSelect.value);
+  return Number.isNaN(value) || value <= 0 ? 2 : value;
+}
+
+function getPlaybackRate() {
+  const value = parseFloat(playbackRateInput.value.toString().replace(',', '.'));
+  if (Number.isNaN(value) || value <= 0) return 1;
+  return value;
+}
+
+function updateHint() {
+  const meters = getPassadaMetros();
+  const hint = document.getElementById('passadaHint');
+
+  if (meters === null) {
+    hint.textContent = 'Informe sua passada habitual em corrida';
+    hideAlert('alertPassada');
+    return;
+  }
+
+  hint.textContent = `≈ ${meters.toFixed(2)} m — passada convertida`;
+
+  if (meters < 0.40 || meters > 2.20) {
+    showAlert('alertPassada', 'Valor fora do intervalo esperado (40 cm – 2,20 m). Verifique a entrada.');
+  } else {
+    hideAlert('alertPassada');
+  }
+}
+
+function updateSpeedHint() {
+  const rate = getPlaybackRate();
+  document.getElementById('speedHint').textContent = `Velocidade da música: ${rate.toFixed(2)}x. A cadência final é ajustada por esse fator.`;
+}
+
+function updateAnalyzeBtn() {
+  document.getElementById('btnAnalyze').disabled = !audioFile;
+}
+
+async function analyzeAudio() {
+  if (!audioFile) return;
+
+  const passada = getPassadaMetros();
+  if (!passada) {
+    showAlert('alertFile', 'Informe o tamanho da passada antes de analisar.');
+    return;
+  }
+
+  showProgress(0, 'Lendo arquivo de áudio…');
+  hideResult();
+  hideAlert('alertResult');
+  document.getElementById('btnAnalyze').disabled = true;
+
+  try {
+    const arrayBuffer = await readFileAsArrayBuffer(audioFile);
+    showProgress(15, 'Decodificando áudio…');
+
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    showProgress(35, 'Extraindo amostras…');
+
+    const sampleRate = audioBuffer.sampleRate;
+    const totalFrames = audioBuffer.length;
+    const channelData = audioBuffer.getChannelData(0);
+
+    const startFrame = Math.floor(totalFrames * 0.20);
+    const windowFrames = Math.min(sampleRate * 30, totalFrames - startFrame);
+    const samples = channelData.slice(startFrame, startFrame + windowFrames);
+
+    showProgress(55, 'Detectando tempo (BPM)…');
+
+    const bpm = await detectBPM(samples, sampleRate);
+    detectedBPM = bpm;
+
+    document.getElementById('fileStatus').textContent = `BPM detectado: ${bpm}`;
+    showProgress(90, 'Calculando pace…');
+
+    await sleep(250);
+    showProgress(100, 'Concluído!');
+    await sleep(180);
+
+    hideProgress();
+    recalcPace();
+    document.getElementById('btnAnalyze').disabled = false;
+
+    if (ctx && typeof ctx.close === 'function') {
+      ctx.close().catch(() => {});
+    }
+  } catch (error) {
+    console.error(error);
+    hideProgress();
+    showAlert('alertResult', 'Erro ao analisar o áudio. Tente outro arquivo ou formato.');
+    document.getElementById('btnAnalyze').disabled = false;
+  }
+}
+
+function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function detectBPM(samples, sampleRate) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const targetSampleRate = 8000;
+      const ratio = Math.max(1, Math.floor(sampleRate / targetSampleRate));
+      const downsampled = [];
+
+      for (let i = 0; i < samples.length; i += ratio) {
+        downsampled.push(samples[i]);
+      }
+
+      const hopSize = Math.round(targetSampleRate * 0.01);
+      const numHops = Math.floor(downsampled.length / hopSize);
+      const energy = new Float32Array(numHops);
+
+      for (let hop = 0; hop < numHops; hop++) {
+        let sum = 0;
+        const start = hop * hopSize;
+        for (let i = 0; i < hopSize && start + i < downsampled.length; i++) {
+          const sample = downsampled[start + i];
+          sum += sample * sample;
+        }
+        energy[hop] = Math.sqrt(sum / hopSize);
+      }
+
+      const onsetEnvelope = new Float32Array(numHops);
+      for (let i = 1; i < numHops; i++) {
+        const diff = energy[i] - energy[i - 1];
+        onsetEnvelope[i] = diff > 0 ? diff : 0;
+      }
+
+      const hopDurationSec = hopSize / targetSampleRate;
+      const minPeriod = Math.floor(60 / (200 * hopDurationSec));
+      const maxPeriod = Math.ceil(60 / (60 * hopDurationSec));
+
+      let bestCorrelation = -Infinity;
+      let bestLag = minPeriod;
+      const len = onsetEnvelope.length;
+
+      for (let lag = minPeriod; lag <= maxPeriod; lag++) {
+        let correlation = 0;
+        let count = 0;
+        for (let i = 0; i + lag < len; i++) {
+          correlation += onsetEnvelope[i] * onsetEnvelope[i + lag];
+          count++;
+        }
+        correlation /= Math.max(1, count);
+        if (correlation > bestCorrelation) {
+          bestCorrelation = correlation;
+          bestLag = lag;
+        }
+      }
+
+      const bpmRaw = 60 / (bestLag * hopDurationSec);
+      let bpm = bpmRaw;
+
+      while (bpm < 60) bpm *= 2;
+      while (bpm > 200) bpm /= 2;
+
+      resolve(Math.round(bpm));
+    }, 0);
+  });
+}
+
+function calcRunMetrics(bpm, passadaM, stepsPerBeat, playbackRate) {
+  const adjustedBpm = bpm * playbackRate;
+  const cadencePerMin = adjustedBpm * stepsPerBeat;
+  const metersPerMin = cadencePerMin * passadaM;
+
+  if (!Number.isFinite(cadencePerMin) || !Number.isFinite(metersPerMin) || cadencePerMin <= 0 || metersPerMin <= 0) {
+    return null;
+  }
+
+  const secPerKm = (1000 / metersPerMin) * 60;
+  const kmh = 3600 / secPerKm;
+
+  return {
+    adjustedBpm,
+    cadencePerMin,
+    metersPerMin,
+    secPerKm,
+    kmh
+  };
+}
+
+function formatPace(secondsPerKm) {
+  if (!Number.isFinite(secondsPerKm) || secondsPerKm <= 0) return '—';
+  const rounded = Math.round(secondsPerKm);
+  const min = Math.floor(rounded / 60);
+  const sec = rounded % 60;
+  return `${min}:${String(sec).padStart(2, '0')}`;
+}
+
+function recalcPace() {
+  if (!detectedBPM) return;
+
+  const passada = getPassadaMetros();
+  const stepsPerBeat = getStepsPerBeat();
+  const playbackRate = getPlaybackRate();
+
+  if (!passada) return;
+
+  const metrics = calcRunMetrics(detectedBPM, passada, stepsPerBeat, playbackRate);
+  if (!metrics) return;
+
+  updateResultUI(detectedBPM, passada, stepsPerBeat, playbackRate, metrics);
+}
+
+function updateResultUI(bpm, passadaM, stepsPerBeat, playbackRate, metrics) {
+  document.getElementById('paceValue').textContent = formatPace(metrics.secPerKm);
+  document.getElementById('bpmValue').textContent = `${bpm}`;
+  document.getElementById('passadaValue').textContent = passadaM.toFixed(2);
+  document.getElementById('stepsPerBeatValue').textContent = stepsPerBeat.toFixed(0);
+  document.getElementById('cadenciaValue').textContent = Math.round(metrics.cadencePerMin);
+  document.getElementById('kmhValue').textContent = metrics.kmh.toFixed(1);
+  document.getElementById('explanationText').textContent =
+    `Cadência real = ${bpm} BPM × ${stepsPerBeat} passos/batida × ${playbackRate.toFixed(2)}x = ${Math.round(metrics.cadencePerMin)} passos/min`;
+
+  const dot = document.getElementById('bpmDot');
+  dot.classList.remove('beating');
+  dot.style.setProperty('--bpm-interval', `${60 / Math.max(bpm, 1)}s`);
+  void dot.offsetWidth;
+  dot.classList.add('beating');
+
+  document.getElementById('resultCard').classList.add('show');
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function hideResult() {
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('bpmDot').classList.remove('beating');
+}
+
+function showProgress(percent, label) {
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('progressBar').style.width = `${percent}%`;
+  document.getElementById('progressLabel').textContent = label;
+}
+
+function hideProgress() {
+  document.getElementById('progressWrap').classList.remove('show');
+}
+
+function showAlert(id, message) {
+  const el = document.getElementById(id);
+  el.textContent = message;
+  el.classList.add('show');
+}
+
+function hideAlert(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+updateHint();
+updateSpeedHint();
+</script>
+</body>
+</html>

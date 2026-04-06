@@ -137,7 +137,7 @@ public class RunningPlugin extends Plugin {
         accumulatedElapsedSec += Math.max(0L, (System.currentTimeMillis() - startTimeMs) / 1000L);
       }
 
-      stopForegroundService();
+      pauseForegroundService();
       isTracking = false;
       call.resolve();
     } catch (Exception ex) {
@@ -231,6 +231,20 @@ public class RunningPlugin extends Plugin {
     Intent intent = new Intent(context, RunningForegroundService.class);
     intent.setAction(RunningForegroundService.ACTION_STOP);
     context.stopService(intent);
+  }
+
+  private void pauseForegroundService() {
+    Context context = getContext();
+    Intent intent = new Intent(context, RunningForegroundService.class);
+    intent.setAction(RunningForegroundService.ACTION_PAUSE);
+    intent.putExtra(RunningForegroundService.EXTRA_DISTANCE_M, totalDistanceM);
+    intent.putExtra(RunningForegroundService.EXTRA_ELAPSED_SEC, accumulatedElapsedSec);
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      context.startForegroundService(intent);
+    } else {
+      context.startService(intent);
+    }
   }
 
   private void updateForegroundService(double distanceM, long elapsedSec) {

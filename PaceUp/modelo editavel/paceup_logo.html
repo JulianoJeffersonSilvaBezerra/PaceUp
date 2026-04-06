@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PaceUp</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #010206;
+    --green: rgb(149, 229, 56);
+    --green-soft: rgba(149, 229, 56, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(circle at 50% 35%, #0b1510 0%, var(--bg) 65%);
+    overflow: hidden;
+    font-family: 'Bebas Neue', Arial, sans-serif;
+  }
+
+  /* grid sutil */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(149,229,56,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(149,229,56,0.03) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .wrap {
+    display: grid;
+    place-items: center;
+    gap: 14px;
+    position: relative;
+  }
+
+  /* aura de fundo */
+  .wrap::before {
+    content: "";
+    position: absolute;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--green-soft) 0%, transparent 70%);
+    filter: blur(24px);
+    animation: aura 2.5s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  .logo {
+    width: min(38vw, 220px);
+    position: relative;
+    z-index: 1;
+    animation:
+      logoIn 900ms cubic-bezier(.2,.9,.2,1) both,
+      pulse 2400ms ease-in-out 900ms infinite alternate;
+  }
+
+  .logo path { fill: var(--green); }
+
+  .name {
+    font-size: clamp(28px, 6vw, 44px);
+    letter-spacing: 0.22em;
+    color: #fff;
+    opacity: 0;
+    z-index: 1;
+    text-shadow: 0 0 20px rgba(149,229,56,0.25);
+    animation: slideUp 700ms ease 450ms forwards;
+  }
+
+  .name span { color: var(--green); }
+
+  .tagline {
+    font-size: clamp(9px, 1.4vw, 11px);
+    letter-spacing: 0.45em;
+    text-transform: uppercase;
+    color: rgba(149,229,56,0.5);
+    opacity: 0;
+    z-index: 1;
+    animation: slideUp 700ms ease 650ms forwards;
+  }
+
+  @keyframes logoIn {
+    0%   { opacity:0; transform:translateY(16px) scale(.88); filter:drop-shadow(0 0 0 rgba(149,229,56,0)); }
+    60%  { opacity:1; transform:translateY(-3px) scale(1.03); filter:drop-shadow(0 0 14px rgba(149,229,56,.22)); }
+    100% { opacity:1; transform:translateY(0) scale(1); filter:drop-shadow(0 0 12px rgba(149,229,56,.18)); }
+  }
+
+  @keyframes pulse {
+    from { filter: drop-shadow(0 0 8px rgba(149,229,56,.14)); }
+    to   { filter: drop-shadow(0 0 20px rgba(149,229,56,.36)); }
+  }
+
+  @keyframes aura {
+    from { transform: scale(0.9); opacity: 0.6; }
+    to   { transform: scale(1.1); opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <svg class="logo" viewBox="0 0 118 119" xmlns="http://www.w3.org/2000/svg" aria-label="PaceUp logo">
+      <path d="M 111 34 L 91 12 L 65 34 L 65 35 L 75 35 L 76 36 L 76 41 L 75 42 L 75 45 L 72 51 L 64 59 L 59 61 L 57 63 L 51 64 L 47 66 L 41 66 L 40 67 L 32 67 L 31 66 L 31 63 L 32 62 L 32 59 L 34 55 L 35 47 L 37 43 L 38 36 L 39 35 L 54 35 L 57 32 L 58 32 L 61 29 L 62 29 L 66 25 L 67 25 L 71 21 L 71 20 L 70 19 L 25 19 L 24 25 L 23 26 L 23 29 L 22 30 L 22 33 L 21 34 L 21 37 L 20 38 L 20 41 L 19 42 L 19 45 L 18 46 L 18 49 L 17 50 L 17 53 L 16 54 L 15 60 L 14 61 L 14 64 L 13 65 L 13 69 L 11 73 L 11 77 L 10 78 L 10 80 L 8 84 L 7 92 L 5 96 L 5 100 L 21 100 L 23 97 L 23 95 L 24 94 L 24 90 L 25 89 L 25 87 L 27 83 L 41 83 L 42 82 L 47 82 L 48 81 L 51 81 L 52 80 L 58 79 L 61 77 L 63 77 L 71 73 L 74 70 L 78 68 L 83 63 L 83 62 L 88 56 L 89 52 L 91 49 L 92 43 L 93 42 L 93 39 L 95 35 L 111 35 Z" />
+    </svg>
+    <div class="name">PACE<span>UP</span></div>
+    <div class="tagline">Let's PaceUp today</div>
+  </div>
+</body>
+</html>

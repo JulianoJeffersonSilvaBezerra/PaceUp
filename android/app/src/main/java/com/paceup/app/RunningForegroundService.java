@@ -14,6 +14,7 @@ public class RunningForegroundService extends Service {
   public static final String CHANNEL_ID = "paceup_tracking";
   public static final int NOTIFICATION_ID = 2201;
   public static final String ACTION_START_OR_UPDATE = "com.paceup.app.ACTION_START_OR_UPDATE";
+  public static final String ACTION_PAUSE = "com.paceup.app.ACTION_PAUSE";
   public static final String ACTION_STOP = "com.paceup.app.ACTION_STOP";
   public static final String EXTRA_DISTANCE_M = "distanceM";
   public static final String EXTRA_ELAPSED_SEC = "elapsedSec";
@@ -31,6 +32,15 @@ public class RunningForegroundService extends Service {
     if (ACTION_STOP.equals(action)) {
       stopSelf();
       return START_NOT_STICKY;
+    }
+
+    if (ACTION_PAUSE.equals(action)) {
+      final double pausedDistanceM = intent != null ? intent.getDoubleExtra(EXTRA_DISTANCE_M, 0.0) : 0.0;
+      final long pausedElapsedSec = intent != null ? intent.getLongExtra(EXTRA_ELAPSED_SEC, 0L) : 0L;
+      final Notification pausedNotification = buildPausedNotification(pausedDistanceM, pausedElapsedSec);
+      startForeground(NOTIFICATION_ID, pausedNotification);
+      updateNotification(pausedNotification);
+      return START_STICKY;
     }
 
     final double distanceM = intent != null ? intent.getDoubleExtra(EXTRA_DISTANCE_M, 0.0) : 0.0;
@@ -65,6 +75,23 @@ public class RunningForegroundService extends Service {
       .setContentTitle("PaceUp")
       .setContentText("Corrida em andamento")
       .setStyle(new NotificationCompat.BigTextStyle().bigText("Distancia: " + distanceKm + " km | Tempo: " + elapsed))
+      .setOngoing(true)
+      .setOnlyAlertOnce(true)
+      .setPriority(NotificationCompat.PRIORITY_LOW)
+      .build();
+  }
+
+  private Notification buildPausedNotification(double distanceM, long elapsedSec) {
+    final String distanceKm = String.format(java.util.Locale.US, "%.2f", (distanceM / 1000.0));
+    final long min = elapsedSec / 60;
+    final long sec = elapsedSec % 60;
+    final String elapsed = String.format(java.util.Locale.US, "%d:%02d", min, sec);
+
+    return new NotificationCompat.Builder(this, CHANNEL_ID)
+      .setSmallIcon(android.R.drawable.ic_media_pause)
+      .setContentTitle("PaceUp")
+      .setContentText("Corrida pausada")
+      .setStyle(new NotificationCompat.BigTextStyle().bigText("Pausado | Distancia: " + distanceKm + " km | Tempo: " + elapsed))
       .setOngoing(true)
       .setOnlyAlertOnce(true)
       .setPriority(NotificationCompat.PRIORITY_LOW)
